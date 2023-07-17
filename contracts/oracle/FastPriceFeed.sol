@@ -22,7 +22,7 @@ contract FastPriceFeed is ISecondaryPriceFeed, IFastPriceFeed, Governable {
         uint32 cumulativeFastDelta; // cumulative fast price delta
     }
 
-    uint256 public constant PRICE_PRECISION = 10**30;
+    uint256 public constant PRICE_PRECISION = 10 ** 30;
 
     uint256 public constant CUMULATIVE_DELTA_PRECISION = 10 * 1000 * 1000;
 
@@ -157,19 +157,17 @@ contract FastPriceFeed is ISecondaryPriceFeed, IFastPriceFeed, Governable {
         }
     }
 
-    function setSigner(address _account, bool _isActive)
-        external
-        override
-        onlyGov
-    {
+    function setSigner(
+        address _account,
+        bool _isActive
+    ) external override onlyGov {
         isSigner[_account] = _isActive;
     }
 
-    function setUpdater(address _account, bool _isActive)
-        external
-        override
-        onlyGov
-    {
+    function setUpdater(
+        address _account,
+        bool _isActive
+    ) external override onlyGov {
         isUpdater[_account] = _isActive;
     }
 
@@ -177,11 +175,9 @@ contract FastPriceFeed is ISecondaryPriceFeed, IFastPriceFeed, Governable {
         fastPriceEvents = _fastPriceEvents;
     }
 
-    function setVaultPriceFeed(address _vaultPriceFeed)
-        external
-        override
-        onlyGov
-    {
+    function setVaultPriceFeed(
+        address _vaultPriceFeed
+    ) external override onlyGov {
         vaultPriceFeed = _vaultPriceFeed;
     }
 
@@ -189,11 +185,9 @@ contract FastPriceFeed is ISecondaryPriceFeed, IFastPriceFeed, Governable {
         maxTimeDeviation = _maxTimeDeviation;
     }
 
-    function setPriceDuration(uint256 _priceDuration)
-        external
-        override
-        onlyGov
-    {
+    function setPriceDuration(
+        uint256 _priceDuration
+    ) external override onlyGov {
         require(
             _priceDuration <= MAX_PRICE_DURATION,
             "FastPriceFeed: invalid _priceDuration"
@@ -201,11 +195,9 @@ contract FastPriceFeed is ISecondaryPriceFeed, IFastPriceFeed, Governable {
         priceDuration = _priceDuration;
     }
 
-    function setMaxPriceUpdateDelay(uint256 _maxPriceUpdateDelay)
-        external
-        override
-        onlyGov
-    {
+    function setMaxPriceUpdateDelay(
+        uint256 _maxPriceUpdateDelay
+    ) external override onlyGov {
         maxPriceUpdateDelay = _maxPriceUpdateDelay;
     }
 
@@ -221,19 +213,15 @@ contract FastPriceFeed is ISecondaryPriceFeed, IFastPriceFeed, Governable {
         spreadBasisPointsIfChainError = _spreadBasisPointsIfChainError;
     }
 
-    function setMinBlockInterval(uint256 _minBlockInterval)
-        external
-        override
-        onlyGov
-    {
+    function setMinBlockInterval(
+        uint256 _minBlockInterval
+    ) external override onlyGov {
         minBlockInterval = _minBlockInterval;
     }
 
-    function setIsSpreadEnabled(bool _isSpreadEnabled)
-        external
-        override
-        onlyGov
-    {
+    function setIsSpreadEnabled(
+        bool _isSpreadEnabled
+    ) external override onlyGov {
         isSpreadEnabled = _isSpreadEnabled;
     }
 
@@ -245,11 +233,9 @@ contract FastPriceFeed is ISecondaryPriceFeed, IFastPriceFeed, Governable {
         tokenManager = _tokenManager;
     }
 
-    function setMaxDeviationBasisPoints(uint256 _maxDeviationBasisPoints)
-        external
-        override
-        onlyTokenManager
-    {
+    function setMaxDeviationBasisPoints(
+        uint256 _maxDeviationBasisPoints
+    ) external override onlyTokenManager {
         maxDeviationBasisPoints = _maxDeviationBasisPoints;
     }
 
@@ -263,18 +249,15 @@ contract FastPriceFeed is ISecondaryPriceFeed, IFastPriceFeed, Governable {
         }
     }
 
-    function setPriceDataInterval(uint256 _priceDataInterval)
-        external
-        override
-        onlyTokenManager
-    {
+    function setPriceDataInterval(
+        uint256 _priceDataInterval
+    ) external override onlyTokenManager {
         priceDataInterval = _priceDataInterval;
     }
 
-    function setMinAuthorizations(uint256 _minAuthorizations)
-        external
-        onlyTokenManager
-    {
+    function setMinAuthorizations(
+        uint256 _minAuthorizations
+    ) external onlyTokenManager {
         minAuthorizations = _minAuthorizations;
     }
 
@@ -347,10 +330,10 @@ contract FastPriceFeed is ISecondaryPriceFeed, IFastPriceFeed, Governable {
         }
     }
 
-    function setPricesWithBits(uint256 _priceBits, uint256 _timestamp)
-        external
-        onlyUpdater
-    {
+    function setPricesWithBits(
+        uint256 _priceBits,
+        uint256 _timestamp
+    ) external onlyUpdater {
         _setPricesWithBits(_priceBits, _timestamp);
     }
 
@@ -384,70 +367,6 @@ contract FastPriceFeed is ISecondaryPriceFeed, IFastPriceFeed, Governable {
             _endIndexForIncreasePositions,
             payable(msg.sender)
         );
-        _positionRouter.executeDecreasePositions(
-            _endIndexForDecreasePositions,
-            payable(msg.sender)
-        );
-    }
-
-    function setPricesWithBitsAndExecuteIncrease(
-        uint256 _priceBits,
-        uint256 _timestamp,
-        uint256 _endIndexForIncreasePositions,
-        uint256 _endIndexForDecreasePositions,
-        uint256 _maxIncreasePositions,
-        uint256 _maxDecreasePositions
-    ) external onlyUpdater {
-        _setPricesWithBits(_priceBits, _timestamp);
-
-        IPositionRouter _positionRouter = IPositionRouter(positionRouter);
-        uint256 maxEndIndexForIncrease = _positionRouter
-            .increasePositionRequestKeysStart()
-            .add(_maxIncreasePositions);
-        uint256 maxEndIndexForDecrease = _positionRouter
-            .decreasePositionRequestKeysStart()
-            .add(_maxDecreasePositions);
-
-        if (_endIndexForIncreasePositions > maxEndIndexForIncrease) {
-            _endIndexForIncreasePositions = maxEndIndexForIncrease;
-        }
-
-        if (_endIndexForDecreasePositions > maxEndIndexForDecrease) {
-            _endIndexForDecreasePositions = maxEndIndexForDecrease;
-        }
-
-        _positionRouter.executeIncreasePositions(
-            _endIndexForIncreasePositions,
-            payable(msg.sender)
-        );
-    }
-
-    function setPricesWithBitsAndExecuteDecrease(
-        uint256 _priceBits,
-        uint256 _timestamp,
-        uint256 _endIndexForIncreasePositions,
-        uint256 _endIndexForDecreasePositions,
-        uint256 _maxIncreasePositions,
-        uint256 _maxDecreasePositions
-    ) external onlyUpdater {
-        _setPricesWithBits(_priceBits, _timestamp);
-
-        IPositionRouter _positionRouter = IPositionRouter(positionRouter);
-        uint256 maxEndIndexForIncrease = _positionRouter
-            .increasePositionRequestKeysStart()
-            .add(_maxIncreasePositions);
-        uint256 maxEndIndexForDecrease = _positionRouter
-            .decreasePositionRequestKeysStart()
-            .add(_maxDecreasePositions);
-
-        if (_endIndexForIncreasePositions > maxEndIndexForIncrease) {
-            _endIndexForIncreasePositions = maxEndIndexForIncrease;
-        }
-
-        if (_endIndexForDecreasePositions > maxEndIndexForDecrease) {
-            _endIndexForDecreasePositions = maxEndIndexForDecrease;
-        }
-
         _positionRouter.executeDecreasePositions(
             _endIndexForDecreasePositions,
             payable(msg.sender)
@@ -591,16 +510,9 @@ contract FastPriceFeed is ISecondaryPriceFeed, IFastPriceFeed, Governable {
         return true;
     }
 
-    function getPriceData(address _token)
-        public
-        view
-        returns (
-            uint256,
-            uint256,
-            uint256,
-            uint256
-        )
-    {
+    function getPriceData(
+        address _token
+    ) public view returns (uint256, uint256, uint256, uint256) {
         PriceDataItem memory data = priceData[_token];
         return (
             uint256(data.refPrice),
@@ -610,9 +522,10 @@ contract FastPriceFeed is ISecondaryPriceFeed, IFastPriceFeed, Governable {
         );
     }
 
-    function _setPricesWithBits(uint256 _priceBits, uint256 _timestamp)
-        private
-    {
+    function _setPricesWithBits(
+        uint256 _priceBits,
+        uint256 _timestamp
+    ) private {
         bool shouldUpdate = _setLastUpdatedValues(_timestamp);
 
         if (shouldUpdate) {
