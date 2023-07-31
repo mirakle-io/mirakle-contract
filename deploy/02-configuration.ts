@@ -1,21 +1,21 @@
 import hardhat from "hardhat"
 import { DeployFunction } from "hardhat-deploy/dist/types"
 import { HardhatRuntimeEnvironment } from "hardhat/types"
-import Avaxconfiguration  from "./configuration";
-import BaseConfiguration  from "./configuration.base";
+import Avaxconfiguration from "./configuration";
+import BaseConfiguration from "./configuration.base";
 
 
 const { getChainId, ethers } = hardhat
 
 const func: DeployFunction = async ({ deployments, getNamedAccounts, getChainId }) => {
-  const { deploy,get,execute ,read} = deployments;
+  const { deploy, get, execute, read } = deployments;
   const { deployer } = await getNamedAccounts();
-  const chainId = await getChainId(); 
- 
+  const chainId = await getChainId();
+
   const USDM = await get('USDM');
   const WETH = await get('WETH');
-  const QLP = await get('QLP');
-  const Qiji = await get('Qiji');
+  const BLP = await get('BLP');
+  const BGTX = await get('BGTX');
   const BTC = await get('BTC');
   const BTCB = await get('BTC.b');
   const USDC = await get('USDC');
@@ -27,18 +27,18 @@ const func: DeployFunction = async ({ deployments, getNamedAccounts, getChainId 
   const vault = await get('Vault');
   const vaultErrorController = await get('VaultErrorController');
   const vaultUtils = await get('VaultUtils');
-  const bnQiji = await get('bnQiji');
-  const sbQiji = await get('sbQiji');
-  const sQiji = await get('sQiji');
-  const sbfQiji = await get('sbfQiji');
-  const bonusDistributor = await get('BonusDistributor'); 
-  const esQiji = await get('EsQiji');
-  const fQiji = await get('fQiji');
-  const fsQLP = await get('StakedGlpTracker');
+  const bnBGTX = await get('bnBGTX');
+  const sbBGTX = await get('sbBGTX');
+  const sBGTX = await get('sBGTX');
+  const sbfBGTX = await get('sbfBGTX');
+  const bonusDistributor = await get('BonusDistributor');
+  const esBGTX = await get('EsBGTX');
+  const fBGTX = await get('fBGTX');
+  const fsBLP = await get('StakedGlpTracker');
   const glpManager = await get('GlpManager');
-  const vQiji = await get('vQiji');
-  const vQLP = await get('vQLP');
-  const fQLP = await get('FeeGlpTracker');
+  const vBGTX = await get('vBGTX');
+  const vBLP = await get('vBLP');
+  const fBLP = await get('FeeGlpTracker');
   const glpManagerRewardRouter = await get('GlpManagerRewardRouter');
   const fastPriceEvents = await get('FastPriceEvents');
   const fastPriceFeed = await get('FastPriceFeed');
@@ -52,16 +52,16 @@ const func: DeployFunction = async ({ deployments, getNamedAccounts, getChainId 
   const stakedGlpDistributor = await get('StakedGlpDistributor');
   const stakedGlpTracker = await get('StakedGlpTracker');
   const orderBook = await get('OrderBook');
-  const sQijiRewardDistributor = await get('sQijiRewardDistributor');
-  const sbfQijiStakedGlpDistributor = await get('sbfQijiStakedGlpDistributor');
+  const sBGTXRewardDistributor = await get('sBGTXRewardDistributor');
+  const sbfBGTXStakedGlpDistributor = await get('sbfBGTXStakedGlpDistributor');
 
   let configuration = Avaxconfiguration;
-  if(chainId =='84531'){
+  if (chainId == '84531') {
     configuration = BaseConfiguration;
   }
 
-  let { native,avax, btc, btcb, eth, usdce, usdc } = configuration;
-  
+  let { native, avax, btc, btcb, eth, usdce, usdc } = configuration;
+
   avax.address = WETH.address;
   btc.address = BTC.address;
   btcb.address = BTCB.address;
@@ -69,15 +69,15 @@ const func: DeployFunction = async ({ deployments, getNamedAccounts, getChainId 
   usdce.address = USDCE.address;
   usdc.address = USDC.address;
 
-  if(chainId =='84531'){
+  if (chainId == '84531') {
     console.log('----------------------------')
     avax.address = AVAX.address;
     eth.address = WETH.address;
   }
-   
+
 
   // Chain Fuse Testnet
-  if(chainId =='123'){
+  if (chainId == '123') {
     console.log('assign PriceFeed');
     const supraPriceFeedFuse = await get('Supra_PriceFeed_fuse');
     const supraPriceFeedAvax = await get('Supra_PriceFeed_avax');
@@ -88,65 +88,65 @@ const func: DeployFunction = async ({ deployments, getNamedAccounts, getChainId 
     native.name = 'fuse';
     avax.name = 'Wrap Fuse';
 
-    native.priceFeed = supraPriceFeedFuse.address;   
+    native.priceFeed = supraPriceFeedFuse.address;
     avax.priceFeed = supraPriceFeedFuse.address;
     btc.priceFeed = supraPriceFeedBtc.address;
     btcb.priceFeed = supraPriceFeedBtc.address;
     eth.priceFeed = supraPriceFeedEth.address;
     usdce.priceFeed = supraPriceFeedUSDC.address;
     usdc.priceFeed = supraPriceFeedUSDC.address;
-  }  
- 
-  await execute("Vault", { from: deployer, log: true }, "initialize", router.address,USDM.address,vaultPriceFeed.address, toUsd(2),"100","100");
+  }
+
+  await execute("Vault", { from: deployer, log: true }, "initialize", router.address, USDM.address, vaultPriceFeed.address, toUsd(2), "100", "100");
   await execute("Vault", { from: deployer, log: true }, "setFundingRate", 60 * 60, 100, 100);
   await execute("Vault", { from: deployer, log: true }, "setInManagerMode", true);
   await execute("Vault", { from: deployer, log: true }, "setManager", glpManager.address, true);
-  await execute("Vault", { from: deployer, log: true }, "setFees",10, 5, 20,20,1,10,toUsd(2),24 * 60 * 60,true);
+  await execute("Vault", { from: deployer, log: true }, "setFees", 10, 5, 20, 20, 1, 10, toUsd(2), 24 * 60 * 60, true);
   await execute("Vault", { from: deployer, log: true }, "setErrorController", vaultErrorController.address);
   await execute("Vault", { from: deployer, log: true }, "setVaultUtils", vaultUtils.address);
-  await execute("VaultErrorController", { from: deployer, log: true }, "setErrors", vault.address,errors);
-  
-  await execute("QLP", { from: deployer, log: true }, "setInPrivateTransferMode", true);
-  await execute("QLP", { from: deployer, log: true }, "setMinter", glpManager.address, true);
-  await execute("QLP", { from: deployer, log: true }, "setHandler", fQLP.address,true);
-  await execute("FeeGlpTracker", { from: deployer, log: true }, "setHandler", stakedGlpTracker.address,true);
-  await execute("USDM", { from: deployer, log: true }, "addVault", glpManager.address);
-  
+  await execute("VaultErrorController", { from: deployer, log: true }, "setErrors", vault.address, errors);
 
-  await execute("OrderBook", { from: deployer, log: true }, "initialize", router.address,vault.address,WETH.address,USDM.address,"10000000000000000",expandDecimals(10, 30));
- 
+  await execute("BLP", { from: deployer, log: true }, "setInPrivateTransferMode", true);
+  await execute("BLP", { from: deployer, log: true }, "setMinter", glpManager.address, true);
+  await execute("BLP", { from: deployer, log: true }, "setHandler", fBLP.address, true);
+  await execute("FeeGlpTracker", { from: deployer, log: true }, "setHandler", stakedGlpTracker.address, true);
+  await execute("USDM", { from: deployer, log: true }, "addVault", glpManager.address);
+
+
+  await execute("OrderBook", { from: deployer, log: true }, "initialize", router.address, vault.address, WETH.address, USDM.address, "10000000000000000", expandDecimals(10, 30));
+
   await execute("PositionManager", { from: deployer, log: true }, "setReferralStorage", referralStorage.address);
   await execute("PositionManager", { from: deployer, log: true }, "setShouldValidateIncreaseOrder", false);
-  for(let keeper of orderKeepers){
-      await execute("PositionManager", { from: deployer, log: true }, "setOrderKeeper", keeper.address, true);
-  } 
-  for(let liquidator of liquidators){
-      await execute("PositionManager", { from: deployer, log: true }, "setLiquidator", liquidator.address, true);
-  } 
+  for (let keeper of orderKeepers) {
+    await execute("PositionManager", { from: deployer, log: true }, "setOrderKeeper", keeper.address, true);
+  }
+  for (let liquidator of liquidators) {
+    await execute("PositionManager", { from: deployer, log: true }, "setLiquidator", liquidator.address, true);
+  }
 
   await execute("PositionRouter", { from: deployer, log: true }, "setReferralStorage", referralStorage.address);
-  await execute("PositionRouter", { from: deployer, log: true }, "setDelayValues",1, 180, 30 * 60);
+  await execute("PositionRouter", { from: deployer, log: true }, "setDelayValues", 1, 180, 30 * 60);
   await execute("PositionRouter", { from: deployer, log: true }, "setPositionKeeper", fastPriceFeed.address, true);
- 
-  await execute("ShortsTracker", { from: deployer, log: true }, "setHandler", positionManager.address,true);
+
+  await execute("ShortsTracker", { from: deployer, log: true }, "setHandler", positionManager.address, true);
   await execute("Router", { from: deployer, log: true }, "addPlugin", positionManager.address);
   await execute("Router", { from: deployer, log: true }, "addPlugin", positionRouter.address);
   await execute("Router", { from: deployer, log: true }, "addPlugin", orderBook.address);
-  await execute("ShortsTracker", { from: deployer, log: true }, "setHandler", positionRouter.address,true);
-  await execute("ReferralStorage", { from: deployer, log: true }, "setHandler", positionRouter.address,true);
+  await execute("ShortsTracker", { from: deployer, log: true }, "setHandler", positionRouter.address, true);
+  await execute("ReferralStorage", { from: deployer, log: true }, "setHandler", positionRouter.address, true);
 
 
-  await execute("VaultPriceFeed", { from: deployer, log: true }, "setMaxStrictPriceDeviation",expandDecimals(1, 28));
-  await execute("VaultPriceFeed", { from: deployer, log: true }, "setPriceSampleSpace",1);
-  await execute("VaultPriceFeed", { from: deployer, log: true }, "setSecondaryPriceFeed",fastPriceFeed.address);
-  await execute("VaultPriceFeed", { from: deployer, log: true }, "setIsAmmEnabled",false);
+  await execute("VaultPriceFeed", { from: deployer, log: true }, "setMaxStrictPriceDeviation", expandDecimals(1, 28));
+  await execute("VaultPriceFeed", { from: deployer, log: true }, "setPriceSampleSpace", 1);
+  await execute("VaultPriceFeed", { from: deployer, log: true }, "setSecondaryPriceFeed", fastPriceFeed.address);
+  await execute("VaultPriceFeed", { from: deployer, log: true }, "setIsAmmEnabled", false);
 
-  const tokenArr = [ avax, btc, btcb, eth, usdce, usdc ];   
+  const tokenArr = [avax, btc, btcb, eth, usdce, usdc];
 
   //const vaultTokenInfo =  await read("VaultReader",{ from: deployer },"getVaultTokenInfoV4",vault.address, positionManager.address,WETH.address,1, tokenArr.map(t => t.address));
   const vaultPropsLength = 15;
-  for(const [i, tokenItem] of  tokenArr.entries()){
-    const token:any = {};
+  for (const [i, tokenItem] of tokenArr.entries()) {
+    const token: any = {};
     // token.poolAmount = vaultTokenInfo[i * vaultPropsLength];
     // token.reservedAmount = vaultTokenInfo[i * vaultPropsLength + 1];
     // token.availableAmount = token.poolAmount.sub(token.reservedAmount);
@@ -184,130 +184,130 @@ const func: DeployFunction = async ({ deployments, getNamedAccounts, getChainId 
 
     //::TODO await execute("Vault", { from: deployer, log: true }, "clearTokenConfig",tokenItem.address);
 
-  
-     await execute("VaultPriceFeed", { from: deployer, log: true }, "setTokenConfig",tokenItem.address,tokenItem.priceFeed,tokenItem.priceDecimals,tokenItem.isStrictStable); 
-      await execute("Vault", { from: deployer, log: true }, "setTokenConfig",tokenItem.address,tokenItem.decimals,tokenItem.tokenWeight,tokenItem.minProfitBps,tokenItem.maxUsdgAmount,tokenItem.isStable,tokenItem.isShortable);
 
-      await execute("Vault", { from: deployer, log: true }, "setBufferAmount",tokenItem.address, tokenItem.bufferAmount);
+    await execute("VaultPriceFeed", { from: deployer, log: true }, "setTokenConfig", tokenItem.address, tokenItem.priceFeed, tokenItem.priceDecimals, tokenItem.isStrictStable);
+    await execute("Vault", { from: deployer, log: true }, "setTokenConfig", tokenItem.address, tokenItem.decimals, tokenItem.tokenWeight, tokenItem.minProfitBps, tokenItem.maxUsdgAmount, tokenItem.isStable, tokenItem.isShortable);
+
+    await execute("Vault", { from: deployer, log: true }, "setBufferAmount", tokenItem.address, tokenItem.bufferAmount);
 
     //  if(tokenItem.usdgAmount){
     //  //  await execute("Vault", { from: deployer, log: true }, "setUsdgAmount",tokenItem.address, tokenItem.usdgAmount);  //tokenItem.usdgAmount
     //  }
-    
 
-    if (tokenItem.spreadBasisPoints === undefined) { 
+
+    if (tokenItem.spreadBasisPoints === undefined) {
       continue;
     }
-    await execute("VaultPriceFeed", { from: deployer, log: true }, "setSpreadBasisPoints",tokenItem.address,tokenItem.spreadBasisPoints);
+    await execute("VaultPriceFeed", { from: deployer, log: true }, "setSpreadBasisPoints", tokenItem.address, tokenItem.spreadBasisPoints);
   }
 
-  const fastPriceTokens = [avax, eth, btcb, btc ];
+  const fastPriceTokens = [avax, eth, btcb, btc];
 
-  await execute("FastPriceEvents", { from: deployer, log: true }, "setIsPriceFeed",fastPriceFeed.address, true);
-  await execute("FastPriceFeed", { from: deployer, log: true }, "initialize",1, [deployer], [deployer]);
-  await execute("FastPriceFeed", { from: deployer, log: true }, "setTokens",fastPriceTokens.map(t => t.address),fastPriceTokens.map(t => t.fastPricePrecision));
-  await execute("FastPriceFeed", { from: deployer, log: true }, "setVaultPriceFeed",vaultPriceFeed.address);
-  await execute("FastPriceFeed", { from: deployer, log: true }, "setMaxTimeDeviation",60 * 60);
-  await execute("FastPriceFeed", { from: deployer, log: true }, "setSpreadBasisPointsIfInactive",50);
-  await execute("FastPriceFeed", { from: deployer, log: true }, "setSpreadBasisPointsIfChainError",500);
-  await execute("FastPriceFeed", { from: deployer, log: true }, "setMaxCumulativeDeltaDiffs",fastPriceTokens.map(t => t.address), fastPriceTokens.map(t => t.maxCumulativeDeltaDiff));
-  await execute("FastPriceFeed", { from: deployer, log: true }, "setPriceDataInterval",60);
-  await execute("FastPriceFeed", { from: deployer, log: true }, "setTokenManager",tokenManager.address);
+  await execute("FastPriceEvents", { from: deployer, log: true }, "setIsPriceFeed", fastPriceFeed.address, true);
+  await execute("FastPriceFeed", { from: deployer, log: true }, "initialize", 1, [deployer], [deployer]);
+  await execute("FastPriceFeed", { from: deployer, log: true }, "setTokens", fastPriceTokens.map(t => t.address), fastPriceTokens.map(t => t.fastPricePrecision));
+  await execute("FastPriceFeed", { from: deployer, log: true }, "setVaultPriceFeed", vaultPriceFeed.address);
+  await execute("FastPriceFeed", { from: deployer, log: true }, "setMaxTimeDeviation", 60 * 60);
+  await execute("FastPriceFeed", { from: deployer, log: true }, "setSpreadBasisPointsIfInactive", 50);
+  await execute("FastPriceFeed", { from: deployer, log: true }, "setSpreadBasisPointsIfChainError", 500);
+  await execute("FastPriceFeed", { from: deployer, log: true }, "setMaxCumulativeDeltaDiffs", fastPriceTokens.map(t => t.address), fastPriceTokens.map(t => t.maxCumulativeDeltaDiff));
+  await execute("FastPriceFeed", { from: deployer, log: true }, "setPriceDataInterval", 60);
+  await execute("FastPriceFeed", { from: deployer, log: true }, "setTokenManager", tokenManager.address);
 
-  for(let keeper of orderKeepers){
-      await execute("FastPriceFeed", { from: deployer, log: true }, "setUpdater",keeper.address, true);
-  } 
-
-
-   await execute("Reader", { from: deployer, log: true }, "setConfig",true); // AVAX
-
-   await execute("EsQiji", { from: deployer, log: true }, "setInPrivateTransferMode", true);
-   await execute("EsQiji", { from: deployer, log: true }, "setHandler", rewardRouterV2.address,true);
-   await execute("EsQiji", { from: deployer, log: true }, "setHandler", sQijiRewardDistributor.address,true);
-   await execute("EsQiji", { from: deployer, log: true }, "setHandler", stakedGlpDistributor.address,true);
-   await execute("EsQiji", { from: deployer, log: true }, "setHandler", sQiji.address,true);
-   await execute("EsQiji", { from: deployer, log: true }, "setHandler", fsQLP.address,true);
-   await execute("EsQiji", { from: deployer, log: true }, "setHandler", vQLP.address,true);
-   await execute("EsQiji", { from: deployer, log: true }, "setHandler", vQiji.address,true);
-   await execute("EsQiji", { from: deployer, log: true }, "setMinter",deployer,true);
-   await execute("EsQiji", { from: deployer, log: true }, "setMinter",vQiji.address,true);
-   await execute("EsQiji", { from: deployer, log: true }, "setMinter",vQLP.address,true);
-   await execute("EsQiji", { from: deployer, log: true }, "setMinter",vQLP.address,true);
-   await execute("EsQiji", { from: deployer, log: true }, "mint",sQijiRewardDistributor.address,'5000000000000000000');
-   await execute("EsQiji", { from: deployer, log: true }, "mint",stakedGlpDistributor.address,'5000000000000000000');
-   await execute("EsQiji", { from: deployer, log: true }, "mint",sQijiRewardDistributor.address,'200000000000000000000000');
-   await execute("EsQiji", { from: deployer, log: true }, "mint",stakedGlpDistributor.address,'200000000000000000000000');
-  
-   await execute("sbQiji", { from: deployer, log: true }, "initialize",[sQiji.address], bonusDistributor.address);
-   await execute("sbQiji", { from: deployer, log: true }, "setInPrivateTransferMode", true);
-   await execute("sbQiji", { from: deployer, log: true }, "setInPrivateStakingMode",true);
-   await execute("sbQiji", { from: deployer, log: true }, "setInPrivateClaimingMode", true);
-   await execute("sbQiji", { from: deployer, log: true }, "setHandler",rewardRouterV2.address, true);
-   await execute("sbQiji", { from: deployer, log: true }, "setHandler",sbfQiji.address, true);
-   await execute("sbQiji", { from: deployer, log: true }, "setHandler",deployer, true);
-
-   await execute("bnQiji", { from: deployer, log: true }, "setHandler", sbfQiji.address,true);
-   await execute("bnQiji", { from: deployer, log: true }, "setMinter",rewardRouterV2.address,true);
-   await execute("bnQiji", { from: deployer, log: true }, "setMinter",deployer,true);
-   await execute("bnQiji", { from: deployer, log: true }, "mint",bonusDistributor.address,'10000000000000000000000000');
-
-   await execute("sQiji", { from: deployer, log: true }, "initialize",[Qiji.address,esQiji.address],sQijiRewardDistributor.address);
-
-   await execute("sQiji", { from: deployer, log: true }, "setDepositToken",Qiji.address,true);
-   await execute("sQiji", { from: deployer, log: true }, "setHandler",sbQiji.address, true);
-
-   await execute("sbfQiji", { from: deployer, log: true }, "initialize",[sbQiji.address,bnQiji.address], sbfQijiStakedGlpDistributor.address);
-   await execute("sbfQiji", { from: deployer, log: true }, "setInPrivateTransferMode", true);
-   await execute("sbfQiji", { from: deployer, log: true }, "setInPrivateStakingMode", true);
-  await execute("sbfQiji", { from: deployer, log: true }, "setHandler",rewardRouterV2.address, true);
-   await execute("sbfQiji", { from: deployer, log: true }, "setHandler",vQiji.address, true);
-   await execute("sbfQiji", { from: deployer, log: true }, "setHandler",deployer, true);
+  for (let keeper of orderKeepers) {
+    await execute("FastPriceFeed", { from: deployer, log: true }, "setUpdater", keeper.address, true);
+  }
 
 
+  await execute("Reader", { from: deployer, log: true }, "setConfig", true); // AVAX
 
-  await execute("StakedGlpTracker", { from: deployer, log: true }, "initialize",[fQLP.address], stakedGlpDistributor.address);
+  await execute("EsBGTX", { from: deployer, log: true }, "setInPrivateTransferMode", true);
+  await execute("EsBGTX", { from: deployer, log: true }, "setHandler", rewardRouterV2.address, true);
+  await execute("EsBGTX", { from: deployer, log: true }, "setHandler", sBGTXRewardDistributor.address, true);
+  await execute("EsBGTX", { from: deployer, log: true }, "setHandler", stakedGlpDistributor.address, true);
+  await execute("EsBGTX", { from: deployer, log: true }, "setHandler", sBGTX.address, true);
+  await execute("EsBGTX", { from: deployer, log: true }, "setHandler", fsBLP.address, true);
+  await execute("EsBGTX", { from: deployer, log: true }, "setHandler", vBLP.address, true);
+  await execute("EsBGTX", { from: deployer, log: true }, "setHandler", vBGTX.address, true);
+  await execute("EsBGTX", { from: deployer, log: true }, "setMinter", deployer, true);
+  await execute("EsBGTX", { from: deployer, log: true }, "setMinter", vBGTX.address, true);
+  await execute("EsBGTX", { from: deployer, log: true }, "setMinter", vBLP.address, true);
+  await execute("EsBGTX", { from: deployer, log: true }, "setMinter", vBLP.address, true);
+  await execute("EsBGTX", { from: deployer, log: true }, "mint", sBGTXRewardDistributor.address, '5000000000000000000');
+  await execute("EsBGTX", { from: deployer, log: true }, "mint", stakedGlpDistributor.address, '5000000000000000000');
+  await execute("EsBGTX", { from: deployer, log: true }, "mint", sBGTXRewardDistributor.address, '200000000000000000000000');
+  await execute("EsBGTX", { from: deployer, log: true }, "mint", stakedGlpDistributor.address, '200000000000000000000000');
+
+  await execute("sbBGTX", { from: deployer, log: true }, "initialize", [sBGTX.address], bonusDistributor.address);
+  await execute("sbBGTX", { from: deployer, log: true }, "setInPrivateTransferMode", true);
+  await execute("sbBGTX", { from: deployer, log: true }, "setInPrivateStakingMode", true);
+  await execute("sbBGTX", { from: deployer, log: true }, "setInPrivateClaimingMode", true);
+  await execute("sbBGTX", { from: deployer, log: true }, "setHandler", rewardRouterV2.address, true);
+  await execute("sbBGTX", { from: deployer, log: true }, "setHandler", sbfBGTX.address, true);
+  await execute("sbBGTX", { from: deployer, log: true }, "setHandler", deployer, true);
+
+  await execute("bnBGTX", { from: deployer, log: true }, "setHandler", sbfBGTX.address, true);
+  await execute("bnBGTX", { from: deployer, log: true }, "setMinter", rewardRouterV2.address, true);
+  await execute("bnBGTX", { from: deployer, log: true }, "setMinter", deployer, true);
+  await execute("bnBGTX", { from: deployer, log: true }, "mint", bonusDistributor.address, '10000000000000000000000000');
+
+  await execute("sBGTX", { from: deployer, log: true }, "initialize", [BGTX.address, esBGTX.address], sBGTXRewardDistributor.address);
+
+  await execute("sBGTX", { from: deployer, log: true }, "setDepositToken", BGTX.address, true);
+  await execute("sBGTX", { from: deployer, log: true }, "setHandler", sbBGTX.address, true);
+
+  await execute("sbfBGTX", { from: deployer, log: true }, "initialize", [sbBGTX.address, bnBGTX.address], sbfBGTXStakedGlpDistributor.address);
+  await execute("sbfBGTX", { from: deployer, log: true }, "setInPrivateTransferMode", true);
+  await execute("sbfBGTX", { from: deployer, log: true }, "setInPrivateStakingMode", true);
+  await execute("sbfBGTX", { from: deployer, log: true }, "setHandler", rewardRouterV2.address, true);
+  await execute("sbfBGTX", { from: deployer, log: true }, "setHandler", vBGTX.address, true);
+  await execute("sbfBGTX", { from: deployer, log: true }, "setHandler", deployer, true);
+
+
+
+  await execute("StakedGlpTracker", { from: deployer, log: true }, "initialize", [fBLP.address], stakedGlpDistributor.address);
   await execute("StakedGlpTracker", { from: deployer, log: true }, "setInPrivateTransferMode", true);
   await execute("StakedGlpTracker", { from: deployer, log: true }, "setInPrivateStakingMode", true);
-  await execute("StakedGlpTracker", { from: deployer, log: true }, "setHandler", vQLP.address, true);
-  await execute("StakedGlpTracker", { from: deployer, log: true }, "setHandler",rewardRouterV2.address, true);
-  await execute("StakedGlpTracker", { from: deployer, log: true }, "setHandler",glpRewardRouter.address, true);
+  await execute("StakedGlpTracker", { from: deployer, log: true }, "setHandler", vBLP.address, true);
+  await execute("StakedGlpTracker", { from: deployer, log: true }, "setHandler", rewardRouterV2.address, true);
+  await execute("StakedGlpTracker", { from: deployer, log: true }, "setHandler", glpRewardRouter.address, true);
   await execute("StakedGlpTracker", { from: deployer, log: true }, "setHandler", deployer, true);
 
-  await execute("FeeGlpTracker", { from: deployer, log: true }, "initialize",[QLP.address], feeGlpDistributor.address);
+  await execute("FeeGlpTracker", { from: deployer, log: true }, "initialize", [BLP.address], feeGlpDistributor.address);
   await execute("FeeGlpTracker", { from: deployer, log: true }, "setInPrivateTransferMode", true);
   await execute("FeeGlpTracker", { from: deployer, log: true }, "setInPrivateStakingMode", true);
   await execute("FeeGlpTracker", { from: deployer, log: true }, "setHandler", stakedGlpTracker.address, true);
-  await execute("FeeGlpTracker", { from: deployer, log: true }, "setHandler",rewardRouterV2.address, true);
-  await execute("FeeGlpTracker", { from: deployer, log: true }, "setHandler",glpRewardRouter.address, true);
+  await execute("FeeGlpTracker", { from: deployer, log: true }, "setHandler", rewardRouterV2.address, true);
+  await execute("FeeGlpTracker", { from: deployer, log: true }, "setHandler", glpRewardRouter.address, true);
 
-   await execute("sQiji", { from: deployer, log: true }, "setHandler",rewardRouterV2.address, true);
+  await execute("sBGTX", { from: deployer, log: true }, "setHandler", rewardRouterV2.address, true);
 
-  await execute("GlpManager", { from: deployer, log: true }, "setInPrivateMode",true);
-  await execute("GlpManager", { from: deployer, log: true }, "setHandler",rewardRouterV2.address, true);
-
-
-  await execute("GlpManagerRewardRouter", { from: deployer, log: true }, "setInPrivateMode",true);
+  await execute("GlpManager", { from: deployer, log: true }, "setInPrivateMode", true);
+  await execute("GlpManager", { from: deployer, log: true }, "setHandler", rewardRouterV2.address, true);
 
 
- await execute("RewardRouterV2", { from: deployer, log: true }, "initialize",WETH.address,Qiji.address,esQiji.address,bnQiji.address,QLP.address,sQiji.address,sbQiji.address,sbfQiji.address,fQLP.address,fsQLP.address,glpManager.address,vQiji.address,vQLP.address);
+  await execute("GlpManagerRewardRouter", { from: deployer, log: true }, "setInPrivateMode", true);
+
+
+  await execute("RewardRouterV2", { from: deployer, log: true }, "initialize", WETH.address, BGTX.address, esBGTX.address, bnBGTX.address, BLP.address, sBGTX.address, sbBGTX.address, sbfBGTX.address, fBLP.address, fsBLP.address, glpManager.address, vBGTX.address, vBLP.address);
 
   glpManager.address,
-   await execute("GlpRewardRouter", { from: deployer, log: true }, "initialize",WETH.address,"0x0000000000000000000000000000000000000000","0x0000000000000000000000000000000000000000","0x0000000000000000000000000000000000000000",QLP.address,"0x0000000000000000000000000000000000000000","0x0000000000000000000000000000000000000000","0x0000000000000000000000000000000000000000",fQLP.address,fsQLP.address,glpManager.address,"0x0000000000000000000000000000000000000000","0x0000000000000000000000000000000000000000");
+    await execute("GlpRewardRouter", { from: deployer, log: true }, "initialize", WETH.address, "0x0000000000000000000000000000000000000000", "0x0000000000000000000000000000000000000000", "0x0000000000000000000000000000000000000000", BLP.address, "0x0000000000000000000000000000000000000000", "0x0000000000000000000000000000000000000000", "0x0000000000000000000000000000000000000000", fBLP.address, fsBLP.address, glpManager.address, "0x0000000000000000000000000000000000000000", "0x0000000000000000000000000000000000000000");
 
-   await execute("GlpManager", { from: deployer, log: true },"setHandler", glpRewardRouter.address, true);
-
-
-
-await execute("FeeGlpDistributor", { from: deployer, log: true }, "updateLastDistributionTime");
-await execute("StakedGlpDistributor", { from: deployer, log: true }, "updateLastDistributionTime");
+  await execute("GlpManager", { from: deployer, log: true }, "setHandler", glpRewardRouter.address, true);
 
 
 
-   await execute("vQLP", { from: deployer, log: true }, "setHandler",rewardRouterV2.address, true);
-   await execute("vQiji", { from: deployer, log: true }, "setHandler",rewardRouterV2.address, true);
-   
-  
- };
+  await execute("FeeGlpDistributor", { from: deployer, log: true }, "updateLastDistributionTime");
+  await execute("StakedGlpDistributor", { from: deployer, log: true }, "updateLastDistributionTime");
+
+
+
+  await execute("vBLP", { from: deployer, log: true }, "setHandler", rewardRouterV2.address, true);
+  await execute("vBGTX", { from: deployer, log: true }, "setHandler", rewardRouterV2.address, true);
+
+
+};
 
 func.tags = ['configuration'];
 
@@ -315,16 +315,16 @@ func.tags = ['configuration'];
 
 export default func;
 
-function toUsd(value:number) {
+function toUsd(value: number) {
   const normalizedValue = value * Math.pow(10, 10)
   return ethers.BigNumber.from(normalizedValue).mul(ethers.BigNumber.from(10).pow(20))
 }
 
-function bigNumberify(n:number) {
+function bigNumberify(n: number) {
   return ethers.BigNumber.from(n)
 }
 
-function expandDecimals(n:number, decimals:number) {
+function expandDecimals(n: number, decimals: number) {
   return bigNumberify(n).mul(bigNumberify(10).pow(decimals))
 }
 

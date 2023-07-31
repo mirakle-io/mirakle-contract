@@ -4,10 +4,10 @@ pragma solidity 0.6.12;
 
 import "../tokens/MintableBaseToken.sol";
 
-contract QLP is MintableBaseToken {
-    constructor() public MintableBaseToken("Qiji LP", "QLP", 0) {}
+contract BGTX is MintableBaseToken {
+    constructor() public MintableBaseToken("BGTX", "BGTX", 0) {}
 
     function id() external pure returns (string memory _name) {
-        return "QLP";
+        return "BGTX";
     }
 }

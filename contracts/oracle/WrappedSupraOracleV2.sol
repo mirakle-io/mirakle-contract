@@ -2,8 +2,6 @@
 
 pragma solidity 0.6.12;
 
-import "../proxy/Initializable.sol";
-
 import "./interfaces/IPriceFeed.sol";
 
 interface ISupraSValueFeed {
@@ -14,7 +12,7 @@ interface ISupraSValueFeed {
     ) external view returns (bytes32[] memory, bool[] memory);
 }
 
-contract WrappedSupraOracleV2 is Initializable, IPriceFeed {
+contract WrappedSupraOracleV2 is IPriceFeed {
     string public override description = "WrappedSupraOracleV2";
     uint256 constant PRICE_DECIMAL = 100_000_000;
     address public override aggregator;
@@ -31,10 +29,7 @@ contract WrappedSupraOracleV2 is Initializable, IPriceFeed {
         _;
     }
 
-    function initialize(
-        ISupraSValueFeed _address,
-        uint64 _index
-    ) public initializer {
+    constructor(ISupraSValueFeed _address, uint64 _index) public {
         gov = msg.sender;
         isAdmin[msg.sender] = true;
         supraOracle = _address;
@@ -67,13 +62,13 @@ contract WrappedSupraOracleV2 is Initializable, IPriceFeed {
         return uint80(decoded[0]);
     }
 
-    function rawData() public view  returns (uint256[4] memory) {
+    function rawData() public view returns (uint256[4] memory) {
         (bytes32 val, ) = supraOracle.getSvalue(index);
 
         uint256[4] memory decoded = unpack(val);
         return decoded;
     }
- 
+
     // returns roundId, answer, startedAt, updatedAt, answeredInRound
     function getRoundData(
         uint80 _roundId

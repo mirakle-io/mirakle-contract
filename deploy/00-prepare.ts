@@ -7,23 +7,23 @@ const { getChainId, ethers } = hardhat
 const func: DeployFunction = async ({ deployments, getNamedAccounts }) => {
   const { deploy } = deployments;
   const { deployer } = await getNamedAccounts();
-   
-   await deploy('WETH', {
+
+  await deploy('WETH', {
     contract: 'WETH',
     from: deployer,
     log: true,
-    args: ["Wrapped Ether","WETH",18],
+    args: ["Wrapped Ether", "WETH", 18],
   });
 
-   await deploy('QLP', {
-    contract: 'QLP',
+  await deploy('BLP', {
+    contract: 'BLP',
     from: deployer,
     log: true,
     args: [],
   });
 
-   await deploy('Qiji', {
-    contract: 'Qiji',
+  await deploy('BGTX', {
+    contract: 'BGTX',
     from: deployer,
     log: true,
     args: [],
